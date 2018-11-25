@@ -7,6 +7,7 @@ var {
   StyleSheet,
   Text,
   View,
+  TouchableOpacity,
 } = require('react-native');
 
 var TimerMixin = require('react-timer-mixin');
@@ -25,6 +26,8 @@ var Carousel = createReactClass({
       indicatorOffset: 250,
       indicatorText: '•',
       inactiveIndicatorText: '•',
+      indicatorComponent: null,
+      inactiveIndicatorComponent: null,
       width: null,
       initialPage: 0,
       indicatorSpace: 25,
@@ -63,6 +66,18 @@ var Carousel = createReactClass({
     this.refs.pager.scrollToPage(activePage);
   },
 
+  renderTouchableIndicator(i, component) {
+    return (
+      <TouchableOpacity
+        key={i}
+        onPress={this.indicatorPressed.bind(this,i)}
+        activeOpacity={1}
+      >
+        {component}
+      </TouchableOpacity>
+    )
+  },
+
   renderPageIndicator() {
     if (this.props.hideIndicators === true) {
       return null;
@@ -82,16 +97,27 @@ var Carousel = createReactClass({
         continue;
       }
 
+      var indicatorComponent;
+
       style = i === this.state.activePage ? { color: this.props.indicatorColor } : { color: this.props.inactiveIndicatorColor };
-      indicators.push(
-         <Text
+
+      if (i === this.state.activePage && this.props.indicatorComponent) {
+        indicatorComponent = this.renderTouchableIndicator(i,this.props.indicatorComponent);
+      } else if (i !== this.state.activePage && this.props.inactiveIndicatorComponent){
+        indicatorComponent = this.renderTouchableIndicator(i,this.props.inactiveIndicatorComponent);
+      } else {
+        indicatorComponent = (
+          <Text
             style={[style, { fontSize: this.props.indicatorSize }]}
             key={i}
             onPress={this.indicatorPressed.bind(this,i)}
           >
              { i === this.state.activePage  ? this.props.indicatorText : this.props.inactiveIndicatorText }
           </Text>
-      );
+        );
+      }
+      
+      indicators.push(indicatorComponent);
     }
 
     if (indicators.length === 1) {
